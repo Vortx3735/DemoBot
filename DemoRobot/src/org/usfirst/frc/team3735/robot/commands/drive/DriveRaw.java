@@ -1,57 +1,48 @@
-package org.usfirst.frc.team3735.robot.commands.recorder;
+package org.usfirst.frc.team3735.robot.commands.drive;
 
 import org.usfirst.frc.team3735.robot.Robot;
-import org.usfirst.frc.team3735.robot.util.DataRecorder;
-import org.usfirst.frc.team3735.robot.util.Setting;
-import org.usfirst.frc.team3735.robot.util.StringSetting;
-
 
 import edu.wpi.first.wpilibj.command.Command;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  *
  */
-public class SendSmartDashboardFile extends Command {
+public class DriveRaw extends Command {
 
-	StringSetting fileName = new StringSetting("Sending File", "default file");
-	
-    public SendSmartDashboardFile() {
+	private double move;
+    private double turn;
+
+	public DriveRaw(double move, double turn) {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
     	requires(Robot.drive);
-
-    	requires(Robot.navigation);
-
-    	requires(Robot.vision);
+    	this.move = move;
+    	this.turn = turn;
+    	
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	DataRecorder.startSending(fileName.getValue());
+    	Robot.drive.setupDriveForSpeedControl();
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	if(!DataRecorder.outOfData()){
-    		DataRecorder.sendData();
-    	}
+    	Robot.drive.normalDrive(move, turn);
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return DataRecorder.outOfData();
+        return false;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	DataRecorder.endSending();
-    	Robot.drive.setupDriveForSpeedControl();
+    	Robot.drive.normalDrive(0, 0);
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
-    	end();
     }
 }

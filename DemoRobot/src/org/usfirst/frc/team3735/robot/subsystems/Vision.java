@@ -5,11 +5,12 @@ import org.usfirst.frc.team3735.robot.pipelines.PegPipelineLSNTest4;
 import org.usfirst.frc.team3735.robot.pipelines.PegPipelineLSNTest5;
 import org.usfirst.frc.team3735.robot.pipelines.Test4ModdedMore;
 import org.usfirst.frc.team3735.robot.pipelines.Test4ModdedMorem;
+import org.usfirst.frc.team3735.robot.pipelines.TestModdedMoreTRI;
 import org.usfirst.frc.team3735.robot.subsystems.Vision.Pipes;
-import org.usfirst.frc.team3735.robot.util.ContoursOutputPipeline;
-import org.usfirst.frc.team3735.robot.util.Setting;
-import org.usfirst.frc.team3735.robot.util.VisionHandler;
-import org.usfirst.frc.team3735.robot.util.VisionHandler.VisionType;
+import org.usfirst.frc.team3735.robot.util.settings.Setting;
+import org.usfirst.frc.team3735.robot.util.vision.ContoursOutputPipeline;
+import org.usfirst.frc.team3735.robot.util.vision.VisionHandler;
+import org.usfirst.frc.team3735.robot.util.vision.VisionHandler.VisionType;
 
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
@@ -29,6 +30,8 @@ public class Vision extends Subsystem {
 	private static final int IMG_HEIGHT = 240;
 	public static Setting dpp = new Setting("Vision Degrees per Pixel", 0.13125);
 	
+	public static final double nullValue = -.0012345;
+	
 	private UsbCamera camera1;
 	private UsbCamera camera2;
 	
@@ -47,10 +50,10 @@ public class Vision extends Subsystem {
 	    camera1.setResolution(IMG_WIDTH, IMG_HEIGHT);
 	    camera2.setResolution(IMG_WIDTH, IMG_HEIGHT);
 	    
-	    pegs = new VisionHandler(new Test4ModdedMorem(), camera1, 2, "GRIP/PegTracker", VisionType.getCorrectRatio);
+	    pegs = new VisionHandler(new TestModdedMoreTRI(), camera1, 2, "GRIP/PegTracker", VisionType.getCorrectRatio);
 	    pegs.startThread();
 	    
-	    gears = new VisionHandler(new GearPipeline(), camera2, 1, "GRIP/GearTracker", VisionType.Normal);
+	    gears = new VisionHandler(new TestModdedMoreTRI(), camera2, 1, "GRIP/GearTracker", VisionType.Normal);
 	    //gears.startThread();
 	    
 	    mainHandler = pegs;
@@ -69,21 +72,16 @@ public class Vision extends Subsystem {
     }
     
     public void log(){
-//		SmartDashboard.putNumber("CenterX", mainHandler.getCenterX());
-//		SmartDashboard.putNumber("CenterY", mainHandler.getCenterY());
-		SmartDashboard.putNumber("Relative CX", getRelativeCX());
-//		SmartDashboard.putNumber("height", mainHandler.getHeight());
-//		SmartDashboard.putNumber("area", mainHandler.getArea());
 
-		SmartDashboard.putNumber("Gear CenterY", gears.getCenterY());
-		//pegs.publishTarget();
-		//pegs.publishAll();
-		//gears.publishTarget();
 		
     }
 
     public double getRelativeCX(){
-    	return mainHandler.getCenterX() - IMG_WIDTH/2;
+    	if(mainHandler.target.equals(VisionHandler.nullTarget)){
+    		return nullValue;
+    	}else{
+        	return mainHandler.getCenterX() - IMG_WIDTH/2;
+    	}
     }
     public double getWidth(){
     	return mainHandler.getWidth();
@@ -108,10 +106,24 @@ public class Vision extends Subsystem {
 	
 	public void pause(){
 		mainHandler.pause();
+
 	}
 
 	public void resume(){
 		mainHandler.resume();
+	}
+
+	public void debugLog() {
+//		SmartDashboard.putNumber("CenterX", mainHandler.getCenterX());
+//		SmartDashboard.putNumber("CenterY", mainHandler.getCenterY());
+		SmartDashboard.putNumber("Relative CX", getRelativeCX());
+//		SmartDashboard.putNumber("height", mainHandler.getHeight());
+//		SmartDashboard.putNumber("area", mainHandler.getArea());
+
+		SmartDashboard.putNumber("Gear CenterY", gears.getCenterY());
+		pegs.publishTarget();
+		pegs.publishAll();
+		gears.publishTarget();
 	}
     
     

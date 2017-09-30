@@ -1,7 +1,7 @@
 package org.usfirst.frc.team3735.robot.subsystems;
 
 import org.usfirst.frc.team3735.robot.RobotMap;
-import org.usfirst.frc.team3735.robot.commands.ShooterJoystick;
+import org.usfirst.frc.team3735.robot.commands.ShooterSetLift;
 
 import com.ctre.CANTalon;
 
@@ -17,12 +17,11 @@ public class Shooter extends Subsystem {
     // here. Call these from Commands.
 	private CANTalon leftMotor;
 	private CANTalon rightMotor;
-	private CANTalon angler;
 	
 	private Solenoid sol;
+	private Solenoid lift;
 	
 	public Subsystem shooterMotors = new Lock();
-	public Subsystem angleControl = new Lock();
 	
 	class Lock extends Subsystem{
 		@Override
@@ -41,20 +40,19 @@ public class Shooter extends Subsystem {
 		rightMotor = new CANTalon(RobotMap.Shooter.rightMotor);
 		rightMotor.setInverted(RobotMap.Shooter.rightMotorInverted);
 		
-		angler = new CANTalon(RobotMap.Shooter.angler);
-		angler.setInverted(RobotMap.Shooter.anglerInverted);
+		
 		sol = new Solenoid(RobotMap.Shooter.solenoid);
-		angler.enableBrakeMode(true);
+		lift = new Solenoid(RobotMap.Shooter.lift);
 
 	}
 
     public void initDefaultCommand() {
-        setDefaultCommand(new ShooterJoystick());
+        setDefaultCommand(new ShooterSetLift());
 
     }
 
-	public void setAngleMotor(double speed) {
-		angler.set(speed);
+	public void setLiftUp(boolean lif) {
+		lift.set(lif);
 	}
 
 	public void setMotorSpeed(double value) {

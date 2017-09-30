@@ -42,30 +42,40 @@
 
 //values for the final robot
 
-package org.usfirst.frc.team3735.robot;
+package org.usfirst.frc.team3735.robot.settings;
 
 public class RobotMap {
 
 	public static class Drive{
-		public static int leftMotor1 =		8;//4
-		public static int leftMotor2 = 		12;//5
+		public static int leftMotor1 =		4;//4
+		public static int leftMotor2 = 		5;//5
+		public static int leftMotor3 = 		6;//6
 		
-		public static int rightMotor1 = 	1;//10
-		public static int rightMotor2 = 	2;//11
+		public static int rightMotor1 = 	10;//10
+		public static int rightMotor2 = 	11;//11
+		public static int rightMotor3 = 	12;//12
+	}
+	public static class GearIntake{
+		public static int topRoller = 		8;
+		public static final boolean topRollerInverted = true;
+		public static int liftSolenoid = 			1;
 	}
 	public static class Shooter{
-
-		public static int leftMotor =		7;
-		public static boolean leftMotorInverted = true;
-
-		public static int rightMotor =		4;
-		public static boolean rightMotorInverted = false;
-		
-		public static int lift = 				0;
-
-		public static int solenoid = 			1;
+		public static int drum = 			2;
+		public static int drum2 = 			7;
+		public static final boolean drumInverted = false;
+		public static int agitator =   		13;
+		public static final boolean agitatorInverted = false;
+	}
+	public static class BallIntake{
+		public static int roller = 			1;
+		public static final boolean rollerInverted = true;
+	}
+	public static class Scaler{
+		public static int motor = 			3;
+		public static final int motor2 = 	9;
+		public static final boolean scalerInverted = true;
 
 	}
-	
 		
 }

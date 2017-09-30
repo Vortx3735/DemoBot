@@ -1,35 +1,23 @@
 package org.usfirst.frc.team3735.robot.subsystems;
 
-import com.kauailabs.navx.frc.AHRS;
-import com.ctre.CANTalon;
-import com.ctre.CANTalon.FeedbackDevice;
-import com.ctre.CANTalon.TalonControlMode;
-
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.command.PIDSubsystem;
 import edu.wpi.first.wpilibj.command.Subsystem;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import org.usfirst.frc.team3735.robot.Constants;
 import org.usfirst.frc.team3735.robot.Robot;
-import org.usfirst.frc.team3735.robot.RobotMap;
-import org.usfirst.frc.team3735.robot.commands.drive.ExpDrive;
-import org.usfirst.frc.team3735.robot.util.MultiSpeedController;
+//import org.usfirst.frc.team3735.robot.Robot.Side;
+import org.usfirst.frc.team3735.robot.settings.Dms;
+import org.usfirst.frc.team3735.robot.settings.Waypoints;
 import org.usfirst.frc.team3735.robot.util.PIDCtrl;
-import org.usfirst.frc.team3735.robot.util.Setting;
 import org.usfirst.frc.team3735.robot.util.VortxMath;
+import org.usfirst.frc.team3735.robot.util.profiling.Location;
+import org.usfirst.frc.team3735.robot.util.profiling.Position;
+import org.usfirst.frc.team3735.robot.util.settings.Setting;
 
-
-/***********************************************
- *
- ***********************************************/
 
 public class Navigation extends Subsystem implements PIDSource, PIDOutput {
 	private static final int BUMP_THRESHOLD = 1;
@@ -37,15 +25,28 @@ public class Navigation extends Subsystem implements PIDSource, PIDOutput {
 	private AHRS ahrs;
 	
 	private PIDCtrl controller;
-	
+	//PID Controller stuff
+	private static Setting outputExponent = new Setting("Nav Output Exponent", 1);
     public static Setting iZone = new Setting("Turning IZone", 10);
     public static Setting actingI = new Setting("Acting I Value", 0.004);
     
-	public static Setting coefficient = new Setting("Navx Drive Coeffecient", 5);
-	private static Setting outputExponent = new Setting("Nav Output Exponent", 1);
-	private static Setting inputExponent = new Setting("Nav Input Exponent", 1);
+    public static Setting verticalOffset = new Setting("Vertical Offset", 0);
+    
+	public static Setting navCo = new Setting("Navx Assist Coeffecient", 5);
+	public static Setting navVisCo = new Setting("Navx Vision Assist Coeffecient", 5);
+
+	
+	Position pos = new Position(0,0,0);
+	private Object posLock = new Object();
+	NetworkTable table;
+
+	private double prevLeft = 0;
+	private double prevRight = 0;
+	private double curLeft;
+	private double curRight;
 	
 	public Navigation(){
+		table = NetworkTable.getTable("MAP");
 		ahrs = new AHRS(SPI.Port.kMXP);
 		controller = new PIDCtrl(.016,0.0,0.061,this,this);
     	controller.setOutputRange(-.5, .5);
@@ -57,18 +58,29 @@ public class Navigation extends Subsystem implements PIDSource, PIDOutput {
     	
     	SmartDashboard.putData("Navigation Turning Controller", controller);
     	
+		curLeft = Robot.drive.getLeftPositionInches();
+    	curRight = Robot.drive.getRightPositionInches();
 	}
 
+	public synchronized void setPosition(Position p){
+		synchronized(posLock){
+			pos = p;
+		}
+	}
 	
     // Put methods for controlling this subsystem
     // here. Call these from Commands.
 
     public void initDefaultCommand() {
     }
+ 
+  
     
     public double getYaw(){
     	return ahrs.getYaw();
     }
+    
+
     public void zeroYaw(){
     	ahrs.zeroYaw();
     }
@@ -89,6 +101,13 @@ public class Navigation extends Subsystem implements PIDSource, PIDOutput {
 //    	SmartDashboard.putNumber("Gyro Accel XY Vector", getXYAcceleration());
 
  //     displayDebugGyroData();
+
+    }
+    
+    public void displayPosition(){
+    	table.putNumberArray("centerX", new double[]{pos.x});
+		table.putNumberArray("centerY", new double[]{pos.y});
+		table.putNumberArray("angle", new double[]{pos.yaw});
     }
     
     
@@ -190,8 +209,7 @@ public class Navigation extends Subsystem implements PIDSource, PIDOutput {
 
 	@Override
 	public double pidGet() {
-		//return ahrs.getYaw();
-		return VortxMath.curveAround(ahrs.getYaw(), inputExponent.getValue(), 180);
+		return ahrs.getYaw();
 	}
 
 
@@ -203,7 +221,7 @@ public class Navigation extends Subsystem implements PIDSource, PIDOutput {
 	@Override
 	public void pidWrite(double output) {
 		output = VortxMath.curve(output, outputExponent.getValue());
-		Robot.drive.setLeftRightOutputs(output, -output);
+		Robot.drive.setLeftRight(output, -output);
 	}
 
 
@@ -215,7 +233,13 @@ public class Navigation extends Subsystem implements PIDSource, PIDOutput {
 		return Math.hypot(ahrs.getWorldLinearAccelY(), ahrs.getWorldLinearAccelX());
 	}
 	
-	
+
+	public void debugLog() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
     
 }
 

@@ -1,30 +1,16 @@
 package org.usfirst.frc.team3735.robot;
 
-import org.opencv.core.Rect;
-import org.opencv.imgproc.Imgproc;
-import org.usfirst.frc.team3735.robot.commands.drive.RecordAverageRate;
-import org.usfirst.frc.team3735.robot.commands.drive.RecordTrapTurnData;
-import org.usfirst.frc.team3735.robot.commands.recorder.RecordSmartDashboardFile;
-import org.usfirst.frc.team3735.robot.commands.recorder.SendSmartDashboardFile;
-import org.usfirst.frc.team3735.robot.pipelines.GearPipeline;
-import org.usfirst.frc.team3735.robot.pipelines.StickyNotePipeline;
+import org.usfirst.frc.team3735.robot.ois.GTAOI;
 import org.usfirst.frc.team3735.robot.subsystems.Drive;
 import org.usfirst.frc.team3735.robot.subsystems.Navigation;
 import org.usfirst.frc.team3735.robot.subsystems.Shooter;
 import org.usfirst.frc.team3735.robot.subsystems.Vision;
-import org.usfirst.frc.team3735.robot.util.DriveOI;
-
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
-import edu.wpi.first.wpilibj.command.CommandGroup;
-import edu.wpi.first.wpilibj.command.InstantCommand;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.vision.VisionThread;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -45,9 +31,6 @@ public class Robot extends IterativeRobot {
 
 	public static GTAOI oi;
 	public RobotMap robotmap;
-	
-	boolean rightSide = false;
-
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -56,7 +39,6 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void robotInit() {
 		robotmap = new RobotMap();
-
 		drive = new Drive();
 		navigation = new Navigation();
 		vision = new Vision();
@@ -67,38 +49,7 @@ public class Robot extends IterativeRobot {
 		autonomousChooser = new SendableChooser<Command>();
 		
 		SmartDashboard.putData("AUTONOMOUS SELECTION", autonomousChooser);
-		
-		//SmartDashboard.putData("Start Sending Turn Voltages", new RecordTrapTurnData());
-		//SmartDashboard.putData("Start Sending Turn Voltages", new RecordAverageRate());
 
-//		SmartDashboard.putData("Record Data", new RecordSmartDashboardFile());
-//		SmartDashboard.putData("Send Data", new SendSmartDashboardFile());
-
-		
-		SmartDashboard.putData("Resume Thread", new InstantCommand(){
-			@Override
-			public void initialize(){
-				Robot.vision.resume();
-			}
-		});
-		
-		SmartDashboard.putData("Pause Thread", new InstantCommand(){
-			@Override
-			public void initialize(){
-				Robot.vision.pause();
-			}
-		});
-		
-
-		SmartDashboard.putData("Zero Yaw", new InstantCommand(){
-			@Override
-			public void initialize(){
-				Robot.navigation.zeroYaw();
-			}
-		});
-		
-		
-		log();
 	}
 	
 	@Override
@@ -117,7 +68,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		navigation.zeroYaw();
 		navigation.zeroYaw();
         autonomousCommand = autonomousChooser.getSelected();
         if (autonomousCommand != null) autonomousCommand.start();
